@@ -220,7 +220,7 @@ def compute_injection_time(travel_mm, friction_profile, label=""):
     idx = np.where(x >= x_end)[0]
 
     if len(idx) == 0:
-        print(f"⚠ Injection not completed: {label}")
+        print(f"Injection not completed: {label}")
         return np.nan, t, x
 
     return t[idx[0]], t, x
@@ -304,3 +304,4 @@ plt.legend()
 plt.grid(True, alpha=0.4)
 plt.tight_layout()
 plt.show()
+
