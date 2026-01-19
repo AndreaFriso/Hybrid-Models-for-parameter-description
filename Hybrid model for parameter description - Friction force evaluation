@@ -7,10 +7,8 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from sklearn.preprocessing import StandardScaler
 
-# =========================
-# Parameters
-# =========================
 
+# Parameters
 # Mechanistic friction parameters
 viscosity = 0.1        # [Pa s]
 r_barrel = 0.00735     # [m]
@@ -21,17 +19,12 @@ k = 1200               # [N/m]
 l0 = 0.045             # [m]
 x_end = 0.035          # [m]
 
-# =========================
-# File paths
-# =========================
 
+# File paths
 file_training1 = r"C:\Users\Andrea\OneDrive - University College London (1)\Desktop\Ph.D\Data\Hypack04_9281826\GSK_DATA_Hypack_04_928_192mm_test1.csv"
 file_test_pred = r"C:\Users\Andrea\OneDrive - University College London (1)\Desktop\Ph.D\Data\Hypack04_9281826\GSK_DATA_Hypack_04_928_120mm_test1.csv"
 
-# =========================
 # Load data
-# =========================
-
 data_train1 = pd.read_csv(file_training1)
 data_test_pred = pd.read_csv(file_test_pred)
 
@@ -47,10 +40,8 @@ travel_test_pred = data_test_pred['Travel [mm]'].values
 speed_training1 = data_train1['Target Speed [mm/min]'].values
 speed_test_pred = data_test_pred['Target Speed [mm/min]'].values
 
-# =========================
-# Mechanistic model
-# =========================
 
+# Mechanistic model
 def friction_mechanistic(speed, theta):
     """
     Mechanistic friction model
@@ -67,10 +58,7 @@ def calibration_function(theta, speed, friction_measured):
     residual = (friction_predicted - friction_measured) ** 2
     return residual
 
-# =========================
 # Calibration of theta
-# =========================
-
 initial_guess = 20610
 
 optimal_parameter_cal_training1 = np.zeros(len(friction_training1))
@@ -92,10 +80,8 @@ for i in range(len(friction_test_pred)):
     )
     optimal_parameter_cal_testing[i] = calibration_test.x[0]
 
-# =========================
-# Plot calibrated theta
-# =========================
 
+# Plot calibrated theta
 plt.figure()
 plt.scatter(travel_training1, optimal_parameter_cal_training1, label='Training data')
 plt.scatter(travel_test_pred, optimal_parameter_cal_testing, label='Testing data')
@@ -124,10 +110,8 @@ X_test_scaled = scaler_x.transform(X_test)
 y_train_scaled = scaler_y.fit_transform(Y_training_ANN.reshape(-1, 1)).flatten()
 y_test_scaled = scaler_y.transform(Y_test_ANN.reshape(-1, 1)).flatten()
 
-# =========================
-# Build deterministic ANN
-# =========================
 
+# Definition of the deterministic ANN
 model = Sequential([
     Dense(64, activation='relu', input_shape=(1,)),
     Dense(64, activation='relu'),
@@ -136,37 +120,28 @@ model = Sequential([
 
 model.compile(optimizer='adam', loss='mse', metrics=['mae'])
 
-# =========================
-# Train ANN
-# =========================
 
+# ANN training procedure
 history = model.fit(
     X_train_scaled,
     y_train_scaled,
     epochs=100,
     batch_size=32,
     validation_data=(X_test_scaled, y_test_scaled),
-    verbose=1
-)
+    verbose=1)
 
-# =========================
-# Evaluate ANN
-# =========================
-
+# ANN evaluation (now we test the perforance of the ANN after the training)
 loss, mae = model.evaluate(X_test_scaled, y_test_scaled)
 print(f'Validation Loss: {loss:.4f}, Validation MAE: {mae:.4f}')
 
-# =========================
-# Predict theta with ANN
-# =========================
 
+# ANN 4 prediction (the ANN here is used to predict the optima theta profile)
 Y_pred_scaled = model.predict(X_test_scaled).flatten()
 Y_pred_rescaled = scaler_y.inverse_transform(Y_pred_scaled.reshape(-1, 1)).flatten()
 
-# =========================
-# Hybrid model prediction
-# =========================
 
+# Hybrid model prediction
+# Predictions obtined using the mechanistic model and the data-driven derived parameters
 friction_predicted_hybrid = np.zeros(len(friction_test_pred))
 
 for i in range(len(friction_test_pred)):
@@ -175,10 +150,8 @@ for i in range(len(friction_test_pred)):
         Y_pred_rescaled[i]
     )
 
-# =========================
-# Plot final comparison
-# =========================
 
+# Plot final comparison
 meas_std = [0.400] * len(friction_test_pred)
 
 plt.figure(figsize=(8, 5))
@@ -198,3 +171,4 @@ plt.ylabel('Friction [N]', fontsize=14)
 plt.legend()
 plt.tight_layout()
 plt.show()
+
