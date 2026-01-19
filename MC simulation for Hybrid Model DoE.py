@@ -183,7 +183,7 @@ def injection_time_model(state, t, m, k, l0, friction_fun):
 
     Kf = (2 * np.pi * mu_oil * rb * l_stopper) / d_oil
     Kh = (8 * np.pi * mu_F * Ln * rb**4) / rn**4
-    K_hydro = Kf + Kh
+    K_hydro = Kh
 
     dxdt = v
     dvdt = (k * (l0 - x) - friction_fun(x) - K_hydro * v) / m
@@ -304,4 +304,5 @@ plt.legend()
 plt.grid(True, alpha=0.4)
 plt.tight_layout()
 plt.show()
+
 
